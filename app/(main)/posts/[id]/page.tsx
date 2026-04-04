@@ -1,0 +1,106 @@
+import { notFound } from "next/navigation";
+import Link from "next/link";
+import { getPost } from "@/lib/actions/posts";
+import { getComments } from "@/lib/actions/comments";
+import { createClient } from "@/lib/supabase/server";
+import { LikeButton } from "@/components/likes/LikeButton";
+import { CommentForm } from "@/components/comments/CommentForm";
+import { CommentList } from "@/components/comments/CommentList";
+import { deletePost } from "@/lib/actions/posts";
+import { timeAgo, maskEmail } from "@/lib/utils";
+import { ArrowLeft, UserRound, Lock, MessageCircle, Trash2 } from "lucide-react";
+
+export const revalidate = 0;
+
+export default async function PostDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  const [post, comments, supabase] = await Promise.all([
+    getPost(id),
+    getComments(id),
+    createClient(),
+  ]);
+
+  if (!post) notFound();
+
+  const { data: { user } } = await supabase.auth.getUser();
+  const isOwner = user?.id === post.user_id;
+
+  return (
+    <div className="max-w-xl mx-auto space-y-5 animate-slide-up">
+      {/* Back */}
+      <Link href="/" className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700 dark:hover:text-slate-300">
+        <ArrowLeft size={14} />
+        목록으로
+      </Link>
+
+      {/* Post */}
+      <article className="card p-5 space-y-4">
+        <header className="space-y-2">
+          <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100 leading-snug">
+            {post.title}
+          </h1>
+          <div className="flex items-center gap-2 text-xs text-slate-400 dark:text-slate-500">
+            <span className="flex items-center gap-1">
+              {post.is_anonymous ? (
+                <><Lock size={11} />익명</>
+              ) : (
+                <><UserRound size={11} />{post.author_email ? maskEmail(post.author_email) : "알 수 없음"}</>
+              )}
+            </span>
+            <span className="text-slate-300 dark:text-slate-700">·</span>
+            <span>{timeAgo(post.created_at)}</span>
+
+            {isOwner && (
+              <form
+                action={async () => {
+                  "use server";
+                  await deletePost(id);
+                }}
+                className="ml-auto"
+              >
+                <button
+                  type="submit"
+                  className="flex items-center gap-1 text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                >
+                  <Trash2 size={12} />
+                  삭제
+                </button>
+              </form>
+            )}
+          </div>
+        </header>
+
+        <div className="border-t border-slate-100 dark:border-slate-800 pt-4">
+          <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">
+            {post.content}
+          </p>
+        </div>
+
+        {/* Like */}
+        <div className="flex items-center gap-3 pt-1">
+          <LikeButton
+            postId={id}
+            initialCount={post.like_count ?? 0}
+            initialLiked={post.user_has_liked ?? false}
+            isLoggedIn={!!user}
+          />
+          <span className="flex items-center gap-1 text-xs text-slate-400">
+            <MessageCircle size={13} />
+            댓글 {comments.length}개
+          </span>
+        </div>
+      </article>
+
+      {/* Comments */}
+      <section className="space-y-4">
+        <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300">댓글</h2>
+        <CommentForm postId={id} isLoggedIn={!!user} />
+        <CommentList comments={comments} currentUserId={user?.id} />
+      </section>
+    </div>
+  );
+}
