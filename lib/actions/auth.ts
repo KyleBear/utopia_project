@@ -29,7 +29,7 @@ export async function signup(formData: FormData) {
 
   // 닉네임 중복 체크
   const { data: existingNickname } = await supabase
-    .from("profiles")
+    .from("user_profiles")
     .select("id")
     .eq("nickname", nickname)
     .maybeSingle();
@@ -94,23 +94,14 @@ export async function findAccount(formData: FormData) {
   const nickname = (formData.get("nickname") as string)?.trim();
 
   const { data } = await supabase
-    .from("profiles")
-    .select("id")
+    .from("user_profiles")
+    .select("id, email")
     .eq("nickname", nickname)
     .maybeSingle();
 
   if (!data) return { error: "해당 닉네임으로 가입된 계정이 없습니다." };
 
-  // auth.users 에서 이메일 조회 (users view 사용)
-  const { data: user } = await supabase
-    .from("users")
-    .select("email")
-    .eq("id", data.id)
-    .maybeSingle();
-
-  if (!user?.email) return { error: "계정 정보를 찾을 수 없습니다." };
-
-  const email = user.email as string;
+  const email = data.email as string;
   const masked = email.slice(0, 2) + "***@" + email.split("@")[1];
   return { email: masked };
 }

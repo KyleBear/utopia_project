@@ -8,11 +8,26 @@ export async function getComments(postId: string) {
 
   const { data, error } = await supabase
     .from("comments")
-    .select("id, post_id, user_id, parent_id, content, is_anonymous, created_at, profiles(nickname), users(email)")
+    .select("id, post_id, user_id, parent_id, content, is_anonymous, created_at")
     .eq("post_id", postId)
     .order("created_at", { ascending: true });
 
   if (error) throw new Error(error.message);
+
+  const comments = data ?? [];
+
+  // 비익명 댓글 작성자 닉네임/이메일 일괄 조회
+  const userIds = [...new Set(comments.filter(c => !c.is_anonymous).map(c => c.user_id))];
+  const profileMap: Record<string, { nickname: string | null; email: string | null }> = {};
+  if (userIds.length > 0) {
+    const { data: profiles } = await supabase
+      .from("user_profiles")
+      .select("id, nickname, email")
+      .in("id", userIds);
+    (profiles ?? []).forEach((p: { id: string; nickname: string | null; email: string | null }) => {
+      profileMap[p.id] = { nickname: p.nickname, email: p.email };
+    });
+  }
 
   type MappedComment = {
     id: string; post_id: string; user_id: string; parent_id: string | null;
@@ -21,7 +36,7 @@ export async function getComments(postId: string) {
   };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const mapped: MappedComment[] = (data ?? []).map((c: any) => ({
+  const mapped: MappedComment[] = comments.map((c: any) => ({
     id: c.id as string,
     post_id: c.post_id as string,
     user_id: c.user_id as string,
@@ -29,10 +44,8 @@ export async function getComments(postId: string) {
     content: c.content as string,
     is_anonymous: c.is_anonymous as boolean,
     created_at: c.created_at as string,
-    author_nickname: c.is_anonymous ? null :
-      (Array.isArray(c.profiles) ? c.profiles[0]?.nickname : c.profiles?.nickname) ?? null,
-    author_email: c.is_anonymous ? null :
-      (Array.isArray(c.users) ? c.users[0]?.email : c.users?.email) ?? null,
+    author_nickname: c.is_anonymous ? null : profileMap[c.user_id]?.nickname ?? null,
+    author_email: c.is_anonymous ? null : profileMap[c.user_id]?.email ?? null,
     replies: [],
   }));
 

@@ -12,7 +12,7 @@ export default async function ProfilePage() {
   if (!user) redirect("/login");
 
   const { data: profile } = await supabase
-    .from("profiles")
+    .from("user_profiles")
     .select("nickname")
     .eq("id", user.id)
     .maybeSingle();
