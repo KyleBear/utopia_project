@@ -3,18 +3,18 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { signup } from "@/lib/actions/auth";
-import { ErrorMessage, SuccessMessage } from "@/components/ui/ErrorMessage";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { ErrorMessage } from "@/components/ui/ErrorMessage";
+import { Eye, EyeOff, Loader2, MailCheck } from "lucide-react";
 
 export function SignupForm() {
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+  const [done, setDone] = useState(false);
+  const [sentEmail, setSentEmail] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   async function handleSubmit(formData: FormData) {
     setError(null);
-    setSuccess(null);
     const password = formData.get("password") as string;
     const confirm = formData.get("confirm") as string;
     if (password !== confirm) {
@@ -25,21 +25,57 @@ export function SignupForm() {
       setError("비밀번호는 8자 이상이어야 합니다.");
       return;
     }
+    const email = formData.get("email") as string;
     startTransition(async () => {
       const result = await signup(formData);
-      if (result?.error) setError(result.error);
-      else if (result?.success) setSuccess(result.success);
+      if (result?.error) {
+        setError(result.error);
+      } else {
+        setSentEmail(email);
+        setDone(true);
+      }
     });
+  }
+
+  if (done) {
+    return (
+      <div className="flex flex-col items-center gap-4 py-6 text-center animate-fade-in">
+        <div className="w-14 h-14 rounded-full bg-brand-50 dark:bg-brand-900/30 flex items-center justify-center">
+          <MailCheck size={28} className="text-brand-500" />
+        </div>
+        <div>
+          <h2 className="font-semibold text-slate-900 dark:text-slate-100">이메일을 확인해주세요</h2>
+          <p className="mt-1.5 text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+            <span className="font-medium text-slate-700 dark:text-slate-300">{sentEmail}</span>
+            으로 확인 링크를 보냈습니다.
+            <br />
+            메일함을 확인한 후 링크를 클릭하면 가입이 완료됩니다.
+          </p>
+        </div>
+        <p className="text-xs text-slate-400 dark:text-slate-600">
+          메일이 안 보이면 스팸함도 확인해보세요.
+        </p>
+        <Link href="/login" className="btn-primary w-full py-2.5 mt-2">
+          로그인 화면으로
+        </Link>
+      </div>
+    );
   }
 
   return (
     <form action={handleSubmit} className="space-y-4">
       {error && <ErrorMessage message={error} />}
-      {success && <SuccessMessage message={success} />}
 
       <div className="space-y-1.5">
         <label className="text-sm font-medium text-slate-700 dark:text-slate-300">이메일</label>
-        <input name="email" type="email" required autoComplete="email" placeholder="you@example.com" className="input" />
+        <input
+          name="email"
+          type="email"
+          required
+          autoComplete="email"
+          placeholder="you@example.com"
+          className="input"
+        />
       </div>
 
       <div className="space-y-1.5">
