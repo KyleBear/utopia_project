@@ -1,8 +1,13 @@
+export type Category = "전체" | "연애" | "직장" | "학교" | "가족" | "기타";
+
+export const CATEGORIES: Category[] = ["전체", "연애", "직장", "학교", "가족", "기타"];
+
 export type Post = {
   id: string;
   user_id: string;
   title: string;
   content: string;
+  category: string;
   is_anonymous: boolean;
   created_at: string;
   updated_at: string;
@@ -10,6 +15,7 @@ export type Post = {
   like_count?: number;
   user_has_liked?: boolean;
   author_email?: string | null;
+  author_nickname?: string | null;
 };
 
 export type Comment = {
@@ -20,6 +26,7 @@ export type Comment = {
   is_anonymous: boolean;
   created_at: string;
   author_email?: string | null;
+  author_nickname?: string | null;
 };
 
 export type Like = {

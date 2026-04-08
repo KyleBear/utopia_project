@@ -8,7 +8,7 @@ export async function getComments(postId: string) {
 
   const { data, error } = await supabase
     .from("comments")
-    .select("id, post_id, user_id, content, is_anonymous, created_at, users(email)")
+    .select("id, post_id, user_id, content, is_anonymous, created_at, profiles(nickname), users(email)")
     .eq("post_id", postId)
     .order("created_at", { ascending: true });
 
@@ -22,9 +22,10 @@ export async function getComments(postId: string) {
     content: c.content as string,
     is_anonymous: c.is_anonymous as boolean,
     created_at: c.created_at as string,
-    author_email: c.is_anonymous
-      ? null
-      : (Array.isArray(c.users) ? c.users[0]?.email : c.users?.email) ?? null,
+    author_nickname: c.is_anonymous ? null :
+      (Array.isArray(c.profiles) ? c.profiles[0]?.nickname : c.profiles?.nickname) ?? null,
+    author_email: c.is_anonymous ? null :
+      (Array.isArray(c.users) ? c.users[0]?.email : c.users?.email) ?? null,
   }));
 }
 
@@ -34,8 +35,8 @@ export async function addComment(formData: FormData) {
 
   if (!user) return { error: "로그인이 필요합니다." };
 
-  const postId = formData.get("post_id") as string;
-  const content = (formData.get("content") as string)?.trim();
+  const postId      = formData.get("post_id") as string;
+  const content     = (formData.get("content") as string)?.trim();
   const isAnonymous = formData.get("is_anonymous") === "on";
 
   if (!content) return { error: "댓글 내용을 입력해주세요." };

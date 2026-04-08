@@ -16,24 +16,15 @@ export function SignupForm() {
   async function handleSubmit(formData: FormData) {
     setError(null);
     const password = formData.get("password") as string;
-    const confirm = formData.get("confirm") as string;
-    if (password !== confirm) {
-      setError("비밀번호가 일치하지 않습니다.");
-      return;
-    }
-    if (password.length < 8) {
-      setError("비밀번호는 8자 이상이어야 합니다.");
-      return;
-    }
+    const confirm  = formData.get("confirm") as string;
+    if (password !== confirm) { setError("비밀번호가 일치하지 않습니다."); return; }
+    if (password.length < 8)  { setError("비밀번호는 8자 이상이어야 합니다."); return; }
+
     const email = formData.get("email") as string;
     startTransition(async () => {
       const result = await signup(formData);
-      if (result?.error) {
-        setError(result.error);
-      } else {
-        setSentEmail(email);
-        setDone(true);
-      }
+      if (result?.error) setError(result.error);
+      else { setSentEmail(email); setDone(true); }
     });
   }
 
@@ -47,17 +38,12 @@ export function SignupForm() {
           <h2 className="font-semibold text-slate-900 dark:text-slate-100">이메일을 확인해주세요</h2>
           <p className="mt-1.5 text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
             <span className="font-medium text-slate-700 dark:text-slate-300">{sentEmail}</span>
-            으로 확인 링크를 보냈습니다.
-            <br />
-            메일함을 확인한 후 링크를 클릭하면 가입이 완료됩니다.
+            으로 확인 링크를 보냈습니다.<br />
+            링크를 클릭하면 가입이 완료됩니다.
           </p>
         </div>
-        <p className="text-xs text-slate-400 dark:text-slate-600">
-          메일이 안 보이면 스팸함도 확인해보세요.
-        </p>
-        <Link href="/login" className="btn-primary w-full py-2.5 mt-2">
-          로그인 화면으로
-        </Link>
+        <p className="text-xs text-slate-400 dark:text-slate-600">메일이 안 보이면 스팸함도 확인해보세요.</p>
+        <Link href="/login" className="btn-primary w-full py-2.5 mt-2">로그인 화면으로</Link>
       </div>
     );
   }
@@ -67,33 +53,24 @@ export function SignupForm() {
       {error && <ErrorMessage message={error} />}
 
       <div className="space-y-1.5">
+        <label className="text-sm font-medium text-slate-700 dark:text-slate-300">닉네임</label>
+        <input name="nickname" type="text" required minLength={2} maxLength={20}
+          placeholder="2~20자 (다른 사용자에게 표시됩니다)" className="input" />
+      </div>
+
+      <div className="space-y-1.5">
         <label className="text-sm font-medium text-slate-700 dark:text-slate-300">이메일</label>
-        <input
-          name="email"
-          type="email"
-          required
-          autoComplete="email"
-          placeholder="you@example.com"
-          className="input"
-        />
+        <input name="email" type="email" required autoComplete="email"
+          placeholder="you@example.com" className="input" />
       </div>
 
       <div className="space-y-1.5">
         <label className="text-sm font-medium text-slate-700 dark:text-slate-300">비밀번호</label>
         <div className="relative">
-          <input
-            name="password"
-            type={showPw ? "text" : "password"}
-            required
-            autoComplete="new-password"
-            placeholder="8자 이상"
-            className="input pr-10"
-          />
-          <button
-            type="button"
-            onClick={() => setShowPw((p) => !p)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
-          >
+          <input name="password" type={showPw ? "text" : "password"} required
+            autoComplete="new-password" placeholder="8자 이상" className="input pr-10" />
+          <button type="button" onClick={() => setShowPw(p => !p)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
             {showPw ? <EyeOff size={15} /> : <Eye size={15} />}
           </button>
         </div>
@@ -101,14 +78,8 @@ export function SignupForm() {
 
       <div className="space-y-1.5">
         <label className="text-sm font-medium text-slate-700 dark:text-slate-300">비밀번호 확인</label>
-        <input
-          name="confirm"
-          type={showPw ? "text" : "password"}
-          required
-          autoComplete="new-password"
-          placeholder="비밀번호 재입력"
-          className="input"
-        />
+        <input name="confirm" type={showPw ? "text" : "password"} required
+          autoComplete="new-password" placeholder="비밀번호 재입력" className="input" />
       </div>
 
       <button type="submit" disabled={isPending} className="btn-primary w-full py-2.5">
@@ -118,9 +89,7 @@ export function SignupForm() {
 
       <p className="text-center text-sm text-slate-500 dark:text-slate-400">
         이미 계정이 있으신가요?{" "}
-        <Link href="/login" className="text-brand-600 dark:text-brand-400 hover:underline font-medium">
-          로그인
-        </Link>
+        <Link href="/login" className="text-brand-600 dark:text-brand-400 hover:underline font-medium">로그인</Link>
       </p>
     </form>
   );

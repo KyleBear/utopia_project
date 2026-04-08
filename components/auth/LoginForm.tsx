@@ -24,47 +24,20 @@ export function LoginForm() {
       {error && <ErrorMessage message={error} />}
 
       <div className="space-y-1.5">
-        <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-          이메일
-        </label>
-        <input
-          name="email"
-          type="email"
-          required
-          autoComplete="email"
-          placeholder="you@example.com"
-          className="input"
-        />
+        <label className="text-sm font-medium text-slate-700 dark:text-slate-300">이메일</label>
+        <input name="email" type="email" required autoComplete="email"
+          placeholder="you@example.com" className="input" />
       </div>
 
       <div className="space-y-1.5">
-        <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-          비밀번호
-        </label>
+        <label className="text-sm font-medium text-slate-700 dark:text-slate-300">비밀번호</label>
         <div className="relative">
-          <input
-            name="password"
-            type={showPw ? "text" : "password"}
-            required
-            autoComplete="current-password"
-            placeholder="••••••••"
-            className="input pr-10"
-          />
-          <button
-            type="button"
-            onClick={() => setShowPw((p) => !p)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
-          >
+          <input name="password" type={showPw ? "text" : "password"} required
+            autoComplete="current-password" placeholder="••••••••" className="input pr-10" />
+          <button type="button" onClick={() => setShowPw(p => !p)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
             {showPw ? <EyeOff size={15} /> : <Eye size={15} />}
           </button>
-        </div>
-        <div className="text-right">
-          <Link
-            href="/reset-password"
-            className="text-xs text-brand-600 dark:text-brand-400 hover:underline"
-          >
-            비밀번호를 잊으셨나요?
-          </Link>
         </div>
       </div>
 
@@ -73,11 +46,15 @@ export function LoginForm() {
         {isPending ? "로그인 중..." : "로그인"}
       </button>
 
+      <div className="flex items-center justify-center gap-4 text-xs text-slate-400">
+        <Link href="/find-account" className="hover:text-slate-600 dark:hover:text-slate-300">아이디 찾기</Link>
+        <span>·</span>
+        <Link href="/reset-password" className="hover:text-slate-600 dark:hover:text-slate-300">비밀번호 찾기</Link>
+      </div>
+
       <p className="text-center text-sm text-slate-500 dark:text-slate-400">
         계정이 없으신가요?{" "}
-        <Link href="/signup" className="text-brand-600 dark:text-brand-400 hover:underline font-medium">
-          회원가입
-        </Link>
+        <Link href="/signup" className="text-brand-600 dark:text-brand-400 hover:underline font-medium">회원가입</Link>
       </p>
     </form>
   );

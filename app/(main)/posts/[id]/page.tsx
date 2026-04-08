@@ -7,7 +7,8 @@ import { LikeButton } from "@/components/likes/LikeButton";
 import { CommentForm } from "@/components/comments/CommentForm";
 import { CommentList } from "@/components/comments/CommentList";
 import { deletePost } from "@/lib/actions/posts";
-import { timeAgo, maskEmail } from "@/lib/utils";
+import { timeAgo } from "@/lib/utils";
+import { CategoryBadge } from "@/components/posts/CategoryTabs";
 import { ArrowLeft, UserRound, Lock, MessageCircle, Trash2 } from "lucide-react";
 
 export const revalidate = 0;
@@ -40,6 +41,9 @@ export default async function PostDetailPage({
       {/* Post */}
       <article className="card p-5 space-y-4">
         <header className="space-y-2">
+          <div className="mb-1">
+            <CategoryBadge category={post.category} />
+          </div>
           <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100 leading-snug">
             {post.title}
           </h1>
@@ -48,7 +52,7 @@ export default async function PostDetailPage({
               {post.is_anonymous ? (
                 <><Lock size={11} />익명</>
               ) : (
-                <><UserRound size={11} />{post.author_email ? maskEmail(post.author_email) : "알 수 없음"}</>
+                <><UserRound size={11} />{post.author_nickname ?? "알 수 없음"}</>
               )}
             </span>
             <span className="text-slate-300 dark:text-slate-700">·</span>

@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { PostList } from "@/components/posts/PostList";
 import { SortTabs } from "@/components/posts/SortTabs";
+import { CategoryTabs } from "@/components/posts/CategoryTabs";
 import { PenLine, Loader2 } from "lucide-react";
 import type { SortOption } from "@/lib/types";
 
@@ -10,10 +11,12 @@ export const revalidate = 0;
 export default async function HomePage({
   searchParams,
 }: {
-  searchParams: Promise<{ sort?: string }>;
+  searchParams: Promise<{ sort?: string; page?: string; category?: string }>;
 }) {
-  const { sort } = await searchParams;
+  const { sort, page, category } = await searchParams;
   const currentSort: SortOption = sort === "popular" ? "popular" : "latest";
+  const currentPage = Math.max(1, parseInt(page ?? "1"));
+  const currentCategory = category ?? "전체";
 
   return (
     <div className="space-y-5">
@@ -31,20 +34,28 @@ export default async function HomePage({
         </Link>
       </div>
 
-      {/* Sort + List */}
+      {/* 카테고리 */}
+      <Suspense fallback={null}>
+        <CategoryTabs current={currentCategory} />
+      </Suspense>
+
+      {/* 정렬 */}
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300">게시글</h2>
-        <SortTabs current={currentSort} />
+        <p className="text-xs text-slate-400 dark:text-slate-600">
+          {currentCategory !== "전체" ? `#${currentCategory}` : "전체 글"}
+        </p>
+        <Suspense fallback={null}>
+          <SortTabs current={currentSort} />
+        </Suspense>
       </div>
 
-      <Suspense
-        fallback={
-          <div className="flex justify-center py-12">
-            <Loader2 size={20} className="animate-spin text-slate-400" />
-          </div>
-        }
-      >
-        <PostList sort={currentSort} />
+      {/* 목록 */}
+      <Suspense fallback={
+        <div className="flex justify-center py-12">
+          <Loader2 size={20} className="animate-spin text-slate-400" />
+        </div>
+      }>
+        <PostList sort={currentSort} page={currentPage} category={currentCategory} />
       </Suspense>
     </div>
   );

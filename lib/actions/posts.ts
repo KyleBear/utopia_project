@@ -5,15 +5,22 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { SortOption } from "@/lib/types";
 
-export async function getPosts(sort: SortOption = "latest", page = 1, limit = 20) {
-  const supabase = await createClient();
-  const from = (page - 1) * limit;
-  const to = from + limit - 1;
+const PAGE_SIZE = 15;
 
-  let query = supabase
-    .from("posts_with_counts")
-    .select("*")
-    .range(from, to);
+export async function getPosts(
+  sort: SortOption = "latest",
+  page = 1,
+  category = "전체"
+) {
+  const supabase = await createClient();
+  const from = (page - 1) * PAGE_SIZE;
+  const to = from + PAGE_SIZE - 1;
+
+  let query = supabase.from("posts_with_counts").select("*", { count: "exact" });
+
+  if (category !== "전체") {
+    query = query.eq("category", category);
+  }
 
   if (sort === "popular") {
     query = query.order("like_count", { ascending: false }).order("created_at", { ascending: false });
@@ -21,12 +28,14 @@ export async function getPosts(sort: SortOption = "latest", page = 1, limit = 20
     query = query.order("created_at", { ascending: false });
   }
 
-  const { data, error } = await query;
+  query = query.range(from, to);
+
+  const { data, error, count } = await query;
   if (error) {
     console.error("[getPosts]", error.message);
-    return [];
+    return { posts: [], total: 0 };
   }
-  return data ?? [];
+  return { posts: data ?? [], total: count ?? 0 };
 }
 
 export async function getPost(id: string) {
@@ -61,20 +70,17 @@ export async function createPost(formData: FormData) {
 
   if (!user) redirect("/login");
 
-  const title = (formData.get("title") as string)?.trim();
-  const content = (formData.get("content") as string)?.trim();
+  const title       = (formData.get("title") as string)?.trim();
+  const content     = (formData.get("content") as string)?.trim();
+  const category    = (formData.get("category") as string) || "기타";
   const isAnonymous = formData.get("is_anonymous") === "on";
 
-  if (!title || !content) {
-    return { error: "제목과 내용을 입력해주세요." };
-  }
-  if (title.length > 100) {
-    return { error: "제목은 100자 이내로 입력해주세요." };
-  }
+  if (!title || !content) return { error: "제목과 내용을 입력해주세요." };
+  if (title.length > 100) return { error: "제목은 100자 이내로 입력해주세요." };
 
   const { data, error } = await supabase
     .from("posts")
-    .insert({ user_id: user.id, title, content, is_anonymous: isAnonymous })
+    .insert({ user_id: user.id, title, content, category, is_anonymous: isAnonymous })
     .select("id")
     .single();
 
