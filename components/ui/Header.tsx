@@ -2,7 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { logout } from "@/lib/actions/auth";
 import { ThemeToggle } from "./ThemeToggle";
-import { PenLine, Sparkles } from "lucide-react";
+import { PenLine, Sparkles, ScrollText, UserRound } from "lucide-react";
 
 export async function Header() {
   const supabase = await createClient();
@@ -25,6 +25,14 @@ export async function Header() {
 
           {user ? (
             <>
+              <Link href="/my-posts" className="btn-ghost text-xs px-3 py-1.5">
+                <ScrollText size={13} />
+                내 글
+              </Link>
+              <Link href="/profile" className="btn-ghost text-xs px-3 py-1.5">
+                <UserRound size={13} />
+                내 정보
+              </Link>
               <Link href="/posts/new" className="btn-primary text-xs px-3 py-1.5">
                 <PenLine size={13} />
                 글쓰기

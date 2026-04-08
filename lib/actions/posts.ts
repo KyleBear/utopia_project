@@ -90,6 +90,51 @@ export async function createPost(formData: FormData) {
   redirect(`/posts/${data.id}`);
 }
 
+export async function updatePost(postId: string, formData: FormData) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  const title       = (formData.get("title") as string)?.trim();
+  const content     = (formData.get("content") as string)?.trim();
+  const category    = (formData.get("category") as string) || "기타";
+  const isAnonymous = formData.get("is_anonymous") === "on";
+
+  if (!title || !content) return { error: "제목과 내용을 입력해주세요." };
+  if (title.length > 100) return { error: "제목은 100자 이내로 입력해주세요." };
+
+  const { error } = await supabase
+    .from("posts")
+    .update({ title, content, category, is_anonymous: isAnonymous })
+    .eq("id", postId)
+    .eq("user_id", user.id);
+
+  if (error) return { error: error.message };
+
+  revalidatePath(`/posts/${postId}`);
+  revalidatePath("/");
+  redirect(`/posts/${postId}`);
+}
+
+export async function getMyPosts(page = 1) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { posts: [], total: 0 };
+
+  const from = (page - 1) * PAGE_SIZE;
+  const to   = from + PAGE_SIZE - 1;
+
+  const { data, error, count } = await supabase
+    .from("posts_with_counts")
+    .select("*", { count: "exact" })
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false })
+    .range(from, to);
+
+  if (error) return { posts: [], total: 0 };
+  return { posts: data ?? [], total: count ?? 0 };
+}
+
 export async function deletePost(postId: string) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();

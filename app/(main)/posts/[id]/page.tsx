@@ -9,7 +9,7 @@ import { CommentList } from "@/components/comments/CommentList";
 import { deletePost } from "@/lib/actions/posts";
 import { timeAgo } from "@/lib/utils";
 import { CategoryBadge } from "@/components/posts/CategoryTabs";
-import { ArrowLeft, UserRound, Lock, MessageCircle, Trash2 } from "lucide-react";
+import { ArrowLeft, UserRound, Lock, MessageCircle, Trash2, Pencil } from "lucide-react";
 
 export const revalidate = 0;
 
@@ -59,21 +59,29 @@ export default async function PostDetailPage({
             <span>{timeAgo(post.created_at)}</span>
 
             {isOwner && (
-              <form
-                action={async () => {
-                  "use server";
-                  await deletePost(id);
-                }}
-                className="ml-auto"
-              >
-                <button
-                  type="submit"
-                  className="flex items-center gap-1 text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+              <div className="ml-auto flex items-center gap-2">
+                <Link
+                  href={`/posts/${id}/edit`}
+                  className="flex items-center gap-1 text-slate-400 hover:text-brand-500 dark:hover:text-brand-400 transition-colors"
                 >
-                  <Trash2 size={12} />
-                  삭제
-                </button>
-              </form>
+                  <Pencil size={12} />
+                  수정
+                </Link>
+                <form
+                  action={async () => {
+                    "use server";
+                    await deletePost(id);
+                  }}
+                >
+                  <button
+                    type="submit"
+                    className="flex items-center gap-1 text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                  >
+                    <Trash2 size={12} />
+                    삭제
+                  </button>
+                </form>
+              </div>
             )}
           </div>
         </header>
@@ -103,7 +111,7 @@ export default async function PostDetailPage({
       <section className="space-y-4">
         <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300">댓글</h2>
         <CommentForm postId={id} isLoggedIn={!!user} />
-        <CommentList comments={comments} currentUserId={user?.id} />
+        <CommentList comments={comments} currentUserId={user?.id} isLoggedIn={!!user} postId={id} />
       </section>
     </div>
   );

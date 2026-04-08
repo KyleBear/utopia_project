@@ -22,11 +22,13 @@ export type Comment = {
   id: string;
   post_id: string;
   user_id: string;
+  parent_id?: string | null;
   content: string;
   is_anonymous: boolean;
   created_at: string;
   author_email?: string | null;
   author_nickname?: string | null;
+  replies?: Comment[];
 };
 
 export type Like = {

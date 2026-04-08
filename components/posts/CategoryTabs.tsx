@@ -21,7 +21,7 @@ export function CategoryTabs({ current }: { current: string }) {
     const params = new URLSearchParams(searchParams.toString());
     params.set("category", value);
     params.delete("page");
-    router.push(`/?${params.toString()}`);
+    router.replace(`/?${params.toString()}`);
   }
 
   return (

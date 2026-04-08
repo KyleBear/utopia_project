@@ -6,7 +6,7 @@ import { CategoryTabs } from "@/components/posts/CategoryTabs";
 import { PenLine, Loader2 } from "lucide-react";
 import type { SortOption } from "@/lib/types";
 
-export const revalidate = 0;
+export const revalidate = 30;
 
 export default async function HomePage({
   searchParams,

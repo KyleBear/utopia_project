@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function login(formData: FormData) {
   const supabase = await createClient();
@@ -27,13 +28,13 @@ export async function signup(formData: FormData) {
   }
 
   // 닉네임 중복 체크
-  const { data: existing } = await supabase
+  const { data: existingNickname } = await supabase
     .from("profiles")
     .select("id")
     .eq("nickname", nickname)
     .maybeSingle();
 
-  if (existing) return { error: "이미 사용 중인 닉네임입니다." };
+  if (existingNickname) return { error: "이미 사용 중인 닉네임입니다." };
 
   const { error } = await supabase.auth.signUp({
     email,
@@ -44,7 +45,13 @@ export async function signup(formData: FormData) {
     },
   });
 
-  if (error) return { error: error.message };
+  if (error) {
+    const msg = error.message.toLowerCase();
+    if (msg.includes("already registered") || msg.includes("already exists") || msg.includes("user already")) {
+      return { error: "이미 사용 중인 이메일입니다." };
+    }
+    return { error: error.message };
+  }
 
   return { success: true };
 }
@@ -66,6 +73,20 @@ export async function resetPassword(formData: FormData) {
 
   if (error) return { error: error.message };
   return { success: "비밀번호 재설정 링크를 이메일로 보냈습니다." };
+}
+
+export async function deleteAccount() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "로그인이 필요합니다." };
+
+  const admin = createAdminClient();
+  const { error } = await admin.auth.admin.deleteUser(user.id);
+  if (error) return { error: error.message };
+
+  await supabase.auth.signOut();
+  revalidatePath("/", "layout");
+  redirect("/");
 }
 
 export async function findAccount(formData: FormData) {
