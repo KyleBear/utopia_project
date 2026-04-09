@@ -1,5 +1,5 @@
 -- ============================================================
--- Utopia — Database Schema v2
+-- Utopia — Database Schema v3
 -- Supabase SQL Editor 에서 전체 복붙 후 Run
 -- ============================================================
 
@@ -45,6 +45,7 @@ create table if not exists public.comments (
   id           uuid        primary key default gen_random_uuid(),
   post_id      uuid        not null references public.posts(id) on delete cascade,
   user_id      uuid        not null references auth.users(id) on delete cascade,
+  parent_id    uuid        references public.comments(id) on delete cascade,
   content      text        not null check (char_length(content) between 1 and 500),
   is_anonymous boolean     not null default true,
   created_at   timestamptz not null default now()
@@ -88,7 +89,7 @@ create trigger posts_updated_at
 
 
 -- ============================================================
--- 7. VIEW: posts_with_counts
+-- 6. VIEW: posts_with_counts
 -- ============================================================
 create or replace view public.posts_with_counts as
 select
@@ -114,7 +115,7 @@ grant select on public.posts_with_counts to anon, authenticated;
 
 
 -- ============================================================
--- 8. ROW LEVEL SECURITY
+-- 7. ROW LEVEL SECURITY
 -- ============================================================
 alter table public.posts    enable row level security;
 alter table public.comments enable row level security;
