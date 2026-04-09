@@ -2,7 +2,9 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { logout } from "@/lib/actions/auth";
 import { ThemeToggle } from "./ThemeToggle";
-import { PenLine, Sparkles, ScrollText, UserRound } from "lucide-react";
+import { PenLine, Sparkles, ScrollText, UserRound, Shield } from "lucide-react";
+
+const ADMIN_EMAIL = "juongho1024@gmail.com";
 
 export async function Header() {
   const supabase = await createClient();
@@ -25,6 +27,12 @@ export async function Header() {
 
           {user ? (
             <>
+              {user.email === ADMIN_EMAIL && (
+                <Link href="/admin" className="btn-ghost text-xs px-3 py-1.5 text-brand-500">
+                  <Shield size={13} />
+                  관리자
+                </Link>
+              )}
               <Link href="/my-posts" className="btn-ghost text-xs px-3 py-1.5">
                 <ScrollText size={13} />
                 내 글
