@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { updatePost } from "@/lib/actions/posts";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
+import { TagInput } from "@/components/posts/TagInput";
 import { Loader2, EyeOff, Eye } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CATEGORIES } from "@/lib/types";
@@ -70,6 +71,8 @@ export function EditPostForm({ post }: { post: Post }) {
           className="input resize-none leading-relaxed" />
         <div className="text-right text-xs text-slate-400">{content.length} / 5000</div>
       </div>
+
+      <TagInput defaultTags={post.tags ?? []} />
 
       <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800">
         <div>

@@ -9,7 +9,7 @@ import { CommentList } from "@/components/comments/CommentList";
 import { deletePost } from "@/lib/actions/posts";
 import { timeAgo } from "@/lib/utils";
 import { CategoryBadge } from "@/components/posts/CategoryTabs";
-import { ArrowLeft, UserRound, Lock, MessageCircle, Trash2, Pencil } from "lucide-react";
+import { ArrowLeft, UserRound, Lock, MessageCircle, Trash2, Pencil, Tag } from "lucide-react";
 
 export const revalidate = 60;
 
@@ -103,6 +103,18 @@ export default async function PostDetailPage({
             {post.content}
           </p>
         </div>
+
+        {post.tags?.length > 0 && (
+          <div className="flex flex-wrap items-center gap-1.5">
+            <Tag size={12} className="text-slate-400" />
+            {post.tags.map(tag => (
+              <Link key={tag} href={`/?tag=${encodeURIComponent(tag)}`}
+                className="px-2 py-0.5 text-xs text-brand-600 dark:text-brand-400 bg-brand-50 dark:bg-brand-900/20 rounded-full border border-brand-100 dark:border-brand-900 hover:bg-brand-100 dark:hover:bg-brand-900/40 transition-colors">
+                #{tag}
+              </Link>
+            ))}
+          </div>
+        )}
 
         {/* Like */}
         <div className="flex items-center gap-3 pt-1">

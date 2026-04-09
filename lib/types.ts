@@ -8,6 +8,7 @@ export type Post = {
   title: string;
   content: string;
   category: string;
+  tags: string[];
   is_anonymous: boolean;
   created_at: string;
   updated_at: string;

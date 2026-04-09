@@ -3,7 +3,8 @@ import Link from "next/link";
 import { PostList } from "@/components/posts/PostList";
 import { SortTabs } from "@/components/posts/SortTabs";
 import { CategoryTabs } from "@/components/posts/CategoryTabs";
-import { PenLine, Loader2 } from "lucide-react";
+import { SearchBar } from "@/components/posts/SearchBar";
+import { PenLine, Loader2, X } from "lucide-react";
 import type { SortOption } from "@/lib/types";
 
 export const revalidate = 30;
@@ -11,15 +12,17 @@ export const revalidate = 30;
 export default async function HomePage({
   searchParams,
 }: {
-  searchParams: Promise<{ sort?: string; page?: string; category?: string }>;
+  searchParams: Promise<{ sort?: string; page?: string; category?: string; search?: string; tag?: string }>;
 }) {
-  const { sort, page, category } = await searchParams;
+  const { sort, page, category, search, tag } = await searchParams;
   const currentSort: SortOption = sort === "popular" ? "popular" : "latest";
   const currentPage = Math.max(1, parseInt(page ?? "1"));
   const currentCategory = category ?? "전체";
+  const currentSearch = search ?? "";
+  const currentTag = tag ?? "";
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       {/* Hero */}
       <div className="card p-5 bg-gradient-to-br from-brand-50 to-white dark:from-brand-950/30 dark:to-slate-900 border-brand-100 dark:border-brand-900/40">
         <h1 className="text-lg font-bold text-slate-900 dark:text-slate-100">
@@ -34,16 +37,39 @@ export default async function HomePage({
         </Link>
       </div>
 
+      {/* 검색 */}
+      <Suspense fallback={null}>
+        <SearchBar />
+      </Suspense>
+
       {/* 카테고리 */}
       <Suspense fallback={null}>
         <CategoryTabs current={currentCategory} />
       </Suspense>
 
-      {/* 정렬 */}
-      <div className="flex items-center justify-between">
-        <p className="text-xs text-slate-400 dark:text-slate-600">
-          {currentCategory !== "전체" ? `#${currentCategory}` : "전체 글"}
-        </p>
+      {/* 정렬 + 필터 상태 */}
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          {currentSearch && (
+            <Link href={`/?${new URLSearchParams({ sort: currentSort, category: currentCategory, ...(currentTag ? { tag: currentTag } : {}) }).toString()}`}
+              className="inline-flex items-center gap-1 px-2 py-0.5 text-xs bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700">
+              검색: {currentSearch}
+              <X size={10} />
+            </Link>
+          )}
+          {currentTag && (
+            <Link href={`/?${new URLSearchParams({ sort: currentSort, category: currentCategory, ...(currentSearch ? { search: currentSearch } : {}) }).toString()}`}
+              className="inline-flex items-center gap-1 px-2 py-0.5 text-xs bg-brand-50 dark:bg-brand-900/20 text-brand-600 dark:text-brand-400 rounded-full hover:bg-brand-100 dark:hover:bg-brand-900/40">
+              #{currentTag}
+              <X size={10} />
+            </Link>
+          )}
+          {!currentSearch && !currentTag && (
+            <p className="text-xs text-slate-400 dark:text-slate-600">
+              {currentCategory !== "전체" ? `#${currentCategory}` : "전체 글"}
+            </p>
+          )}
+        </div>
         <Suspense fallback={null}>
           <SortTabs current={currentSort} />
         </Suspense>
@@ -55,7 +81,13 @@ export default async function HomePage({
           <Loader2 size={20} className="animate-spin text-slate-400" />
         </div>
       }>
-        <PostList sort={currentSort} page={currentPage} category={currentCategory} />
+        <PostList
+          sort={currentSort}
+          page={currentPage}
+          category={currentCategory}
+          search={currentSearch}
+          tag={currentTag}
+        />
       </Suspense>
     </div>
   );

@@ -6,10 +6,12 @@ import type { SortOption } from "@/lib/types";
 
 const PAGE_SIZE = 15;
 
-export async function PostList({ sort, page, category }: {
+export async function PostList({ sort, page, category, search = "", tag = "" }: {
   sort: SortOption;
   page: number;
   category: string;
+  search?: string;
+  tag?: string;
 }) {
   const isConfigured =
     process.env.NEXT_PUBLIC_SUPABASE_URL &&
@@ -24,14 +26,18 @@ export async function PostList({ sort, page, category }: {
     );
   }
 
-  const { posts, total } = await getPosts(sort, page, category);
+  const { posts, total } = await getPosts(sort, page, category, search, tag);
 
   if (posts.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-slate-400 dark:text-slate-600">
         <FileQuestion size={36} className="mb-3 opacity-50" />
-        <p className="text-sm">아직 게시글이 없습니다.</p>
-        <p className="text-xs mt-1">첫 번째 고민을 나눠보세요!</p>
+        <p className="text-sm">
+          {search ? `"${search}"에 대한 검색 결과가 없습니다.` :
+           tag ? `#${tag} 태그의 글이 없습니다.` :
+           "아직 게시글이 없습니다."}
+        </p>
+        {(search || tag) && <p className="text-xs mt-1">다른 검색어나 태그를 시도해보세요.</p>}
       </div>
     );
   }

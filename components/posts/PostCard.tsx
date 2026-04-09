@@ -1,13 +1,30 @@
+"use client";
+
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useTransition } from "react";
 import { MessageCircle, Heart, UserRound, Lock } from "lucide-react";
 import { timeAgo } from "@/lib/utils";
 import { CategoryBadge } from "./CategoryTabs";
 import type { Post } from "@/lib/types";
 
 export function PostCard({ post }: { post: Post }) {
-  const author = post.is_anonymous
-    ? "익명"
-    : post.author_nickname ?? "알 수 없음";
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [, startTransition] = useTransition();
+
+  const author = post.is_anonymous ? "익명" : post.author_nickname ?? "알 수 없음";
+
+  function handleTagClick(e: React.MouseEvent, tag: string) {
+    e.preventDefault();
+    e.stopPropagation();
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("tag", tag);
+    params.delete("page");
+    startTransition(() => {
+      router.push(`/?${params.toString()}`);
+    });
+  }
 
   return (
     <Link href={`/posts/${post.id}`}
@@ -22,6 +39,20 @@ export function PostCard({ post }: { post: Post }) {
       <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
         {post.content}
       </p>
+
+      {post.tags?.length > 0 && (
+        <div className="mt-2 flex flex-wrap gap-1">
+          {post.tags.map(tag => (
+            <button
+              key={tag}
+              onClick={e => handleTagClick(e, tag)}
+              className="px-1.5 py-0.5 text-xs text-brand-500 dark:text-brand-400 bg-brand-50 dark:bg-brand-900/20 rounded hover:bg-brand-100 dark:hover:bg-brand-900/40 transition-colors"
+            >
+              #{tag}
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className="mt-3 flex items-center gap-3 text-xs text-slate-400 dark:text-slate-500">
         <span className="flex items-center gap-1">

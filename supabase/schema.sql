@@ -36,6 +36,7 @@ create table if not exists public.posts (
   content      text        not null check (char_length(content) between 1 and 5000),
   category     text        not null default '기타'
                            check (category in ('연애','직장','학교','가족','기타')),
+  tags         text[]      not null default '{}',
   is_anonymous boolean     not null default true,
   created_at   timestamptz not null default now(),
   updated_at   timestamptz not null default now()
@@ -104,7 +105,8 @@ select
   count(distinct l.id)::int                                                      as like_count,
   count(distinct c.id)::int                                                      as comment_count,
   case when p.is_anonymous then null else u.email end                            as author_email,
-  case when p.is_anonymous then null else u.raw_user_meta_data->>'nickname' end  as author_nickname
+  case when p.is_anonymous then null else u.raw_user_meta_data->>'nickname' end  as author_nickname,
+  p.tags
 from public.posts     p
 left join public.likes    l  on l.post_id = p.id
 left join public.comments c  on c.post_id = p.id

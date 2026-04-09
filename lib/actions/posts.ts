@@ -18,9 +18,12 @@ export async function createPost(formData: FormData) {
   if (!title || !content) return { error: "제목과 내용을 입력해주세요." };
   if (title.length > 100) return { error: "제목은 100자 이내로 입력해주세요." };
 
+  const rawTags = (formData.get("tags") as string) ?? "";
+  const tags = rawTags.split(",").map(t => t.trim()).filter(Boolean).slice(0, 5);
+
   const { data, error } = await supabase
     .from("posts")
-    .insert({ user_id: user.id, title, content, category, is_anonymous: isAnonymous })
+    .insert({ user_id: user.id, title, content, category, is_anonymous: isAnonymous, tags })
     .select("id")
     .single();
 
@@ -44,9 +47,12 @@ export async function updatePost(postId: string, formData: FormData) {
   if (!title || !content) return { error: "제목과 내용을 입력해주세요." };
   if (title.length > 100) return { error: "제목은 100자 이내로 입력해주세요." };
 
+  const rawTags = (formData.get("tags") as string) ?? "";
+  const tags = rawTags.split(",").map(t => t.trim()).filter(Boolean).slice(0, 5);
+
   const { error } = await supabase
     .from("posts")
-    .update({ title, content, category, is_anonymous: isAnonymous })
+    .update({ title, content, category, is_anonymous: isAnonymous, tags })
     .eq("id", postId)
     .eq("user_id", user.id);
 
