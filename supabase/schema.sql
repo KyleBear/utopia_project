@@ -117,7 +117,22 @@ grant select on public.posts_with_counts to anon, authenticated;
 
 
 -- ============================================================
--- 7. ROW LEVEL SECURITY
+-- 7. NOTICES
+-- ============================================================
+create table if not exists public.notices (
+  id           uuid        primary key default gen_random_uuid(),
+  title        text        not null check (char_length(title) between 1 and 100),
+  content      text        check (char_length(content) <= 1000),
+  created_at   timestamptz not null default now()
+);
+
+alter table public.notices enable row level security;
+create policy "notices_select" on public.notices for select using (true);
+grant select on public.notices to anon, authenticated;
+
+
+-- ============================================================
+-- 8. ROW LEVEL SECURITY
 -- ============================================================
 alter table public.posts    enable row level security;
 alter table public.comments enable row level security;
