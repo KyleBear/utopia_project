@@ -29,8 +29,12 @@ export function EditPostForm({ post }: { post: Post }) {
   async function handleSubmit(formData: FormData) {
     setError(null);
     startTransition(async () => {
-      const result = await updatePost(post.id, formData);
-      if (result?.error) setError(result.error);
+      try {
+        const result = await updatePost(post.id, formData);
+        if (result?.error) setError(result.error);
+      } catch (e) {
+        throw e;
+      }
     });
   }
 
