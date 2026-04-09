@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
+import { useTransition } from "react";
 import { cn } from "@/lib/utils";
 import { Clock, TrendingUp } from "lucide-react";
 
@@ -12,11 +13,14 @@ const tabs = [
 export function SortTabs({ current }: { current: string }) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [, startTransition] = useTransition();
 
   function handleClick(value: string) {
     const params = new URLSearchParams(searchParams.toString());
     params.set("sort", value);
-    router.replace(`/?${params.toString()}`);
+    startTransition(() => {
+      router.replace(`/?${params.toString()}`);
+    });
   }
 
   return (

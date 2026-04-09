@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
+import { useTransition } from "react";
 import { cn } from "@/lib/utils";
 import { CATEGORIES, type Category } from "@/lib/types";
 
@@ -16,16 +17,19 @@ const CATEGORY_COLORS: Record<string, string> = {
 export function CategoryTabs({ current }: { current: string }) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [isPending, startTransition] = useTransition();
 
   function handleClick(value: Category) {
     const params = new URLSearchParams(searchParams.toString());
     params.set("category", value);
     params.delete("page");
-    router.replace(`/?${params.toString()}`);
+    startTransition(() => {
+      router.replace(`/?${params.toString()}`);
+    });
   }
 
   return (
-    <div className="flex flex-wrap gap-1.5">
+    <div className={cn("flex flex-wrap gap-1.5", isPending && "opacity-60 pointer-events-none")}>
       {CATEGORIES.map((cat) => (
         <button key={cat} onClick={() => handleClick(cat)}
           className={cn(

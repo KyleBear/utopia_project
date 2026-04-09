@@ -1,68 +1,8 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import type { SortOption } from "@/lib/types";
-
-const PAGE_SIZE = 15;
-
-export async function getPosts(
-  sort: SortOption = "latest",
-  page = 1,
-  category = "전체"
-) {
-  const supabase = await createClient();
-  const from = (page - 1) * PAGE_SIZE;
-  const to = from + PAGE_SIZE - 1;
-
-  let query = supabase.from("posts_with_counts").select("*", { count: "exact" });
-
-  if (category !== "전체") {
-    query = query.eq("category", category);
-  }
-
-  if (sort === "popular") {
-    query = query.order("like_count", { ascending: false }).order("created_at", { ascending: false });
-  } else {
-    query = query.order("created_at", { ascending: false });
-  }
-
-  query = query.range(from, to);
-
-  const { data, error, count } = await query;
-  if (error) {
-    console.error("[getPosts]", error.message);
-    return { posts: [], total: 0 };
-  }
-  return { posts: data ?? [], total: count ?? 0 };
-}
-
-export async function getPost(id: string) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  const { data: post, error } = await supabase
-    .from("posts_with_counts")
-    .select("*")
-    .eq("id", id)
-    .single();
-
-  if (error) return null;
-
-  let userHasLiked = false;
-  if (user) {
-    const { data: like } = await supabase
-      .from("likes")
-      .select("id")
-      .eq("post_id", id)
-      .eq("user_id", user.id)
-      .maybeSingle();
-    userHasLiked = !!like;
-  }
-
-  return { ...post, user_has_liked: userHasLiked };
-}
 
 export async function createPost(formData: FormData) {
   const supabase = await createClient();
@@ -86,6 +26,7 @@ export async function createPost(formData: FormData) {
 
   if (error) return { error: error.message };
 
+  revalidateTag("posts");
   revalidatePath("/");
   redirect(`/posts/${data.id}`);
 }
@@ -111,28 +52,10 @@ export async function updatePost(postId: string, formData: FormData) {
 
   if (error) return { error: error.message };
 
+  revalidateTag("posts");
   revalidatePath(`/posts/${postId}`);
   revalidatePath("/");
   redirect(`/posts/${postId}`);
-}
-
-export async function getMyPosts(page = 1) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { posts: [], total: 0 };
-
-  const from = (page - 1) * PAGE_SIZE;
-  const to   = from + PAGE_SIZE - 1;
-
-  const { data, error, count } = await supabase
-    .from("posts_with_counts")
-    .select("*", { count: "exact" })
-    .eq("user_id", user.id)
-    .order("created_at", { ascending: false })
-    .range(from, to);
-
-  if (error) return { posts: [], total: 0 };
-  return { posts: data ?? [], total: count ?? 0 };
 }
 
 export async function deletePost(postId: string) {
@@ -149,6 +72,7 @@ export async function deletePost(postId: string) {
 
   if (error) return { error: error.message };
 
+  revalidateTag("posts");
   revalidatePath("/");
   redirect("/");
 }

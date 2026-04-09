@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
+import { useTransition } from "react";
 import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -11,6 +12,7 @@ export function Pagination({ total, pageSize, currentPage }: {
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [isPending, startTransition] = useTransition();
   const totalPages = Math.ceil(total / pageSize);
 
   if (totalPages <= 1) return null;
@@ -18,7 +20,9 @@ export function Pagination({ total, pageSize, currentPage }: {
   function goTo(page: number) {
     const params = new URLSearchParams(searchParams.toString());
     params.set("page", String(page));
-    router.push(`/?${params.toString()}`);
+    startTransition(() => {
+      router.push(`/?${params.toString()}`);
+    });
   }
 
   // 최대 5개 페이지 버튼
@@ -27,7 +31,7 @@ export function Pagination({ total, pageSize, currentPage }: {
   const pages = Array.from({ length: end - start + 1 }, (_, i) => start + i);
 
   return (
-    <div className="flex items-center justify-center gap-1 mt-6">
+    <div className={cn("flex items-center justify-center gap-1 mt-6", isPending && "opacity-60 pointer-events-none")}>
       <button onClick={() => goTo(currentPage - 1)} disabled={currentPage === 1}
         className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30">
         <ChevronLeft size={16} />

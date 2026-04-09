@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { getPost } from "@/lib/actions/posts";
+import { getPost } from "@/lib/data/posts";
 import { getComments } from "@/lib/actions/comments";
 import { createClient } from "@/lib/supabase/server";
 import { LikeButton } from "@/components/likes/LikeButton";
@@ -11,7 +11,7 @@ import { timeAgo } from "@/lib/utils";
 import { CategoryBadge } from "@/components/posts/CategoryTabs";
 import { ArrowLeft, UserRound, Lock, MessageCircle, Trash2, Pencil } from "lucide-react";
 
-export const revalidate = 0;
+export const revalidate = 60;
 
 export default async function PostDetailPage({
   params,
@@ -19,16 +19,28 @@ export default async function PostDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [post, comments, supabase] = await Promise.all([
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  const [post, comments] = await Promise.all([
     getPost(id),
     getComments(id),
-    createClient(),
   ]);
 
   if (!post) notFound();
 
-  const { data: { user } } = await supabase.auth.getUser();
   const isOwner = user?.id === post.user_id;
+
+  let userHasLiked = false;
+  if (user) {
+    const { data: like } = await supabase
+      .from("likes")
+      .select("id")
+      .eq("post_id", id)
+      .eq("user_id", user.id)
+      .maybeSingle();
+    userHasLiked = !!like;
+  }
 
   return (
     <div className="max-w-xl mx-auto space-y-5 animate-slide-up">
@@ -97,7 +109,7 @@ export default async function PostDetailPage({
           <LikeButton
             postId={id}
             initialCount={post.like_count ?? 0}
-            initialLiked={post.user_has_liked ?? false}
+            initialLiked={userHasLiked}
             isLoggedIn={!!user}
           />
           <span className="flex items-center gap-1 text-xs text-slate-400">

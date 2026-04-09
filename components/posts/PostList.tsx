@@ -1,4 +1,4 @@
-import { getPosts } from "@/lib/actions/posts";
+import { getPosts } from "@/lib/data/posts";
 import { PostCard } from "./PostCard";
 import { Pagination } from "./Pagination";
 import { FileQuestion, ServerCrash } from "lucide-react";

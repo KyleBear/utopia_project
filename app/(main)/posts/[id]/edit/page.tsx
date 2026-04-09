@@ -1,6 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
-import { getPost } from "@/lib/actions/posts";
+import { getPost } from "@/lib/data/posts";
 import { createClient } from "@/lib/supabase/server";
 import { EditPostForm } from "@/components/posts/EditPostForm";
 import { ArrowLeft } from "lucide-react";

@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
-import { getMyPosts } from "@/lib/actions/posts";
+import { getMyPosts } from "@/lib/data/posts";
 import { PostCard } from "@/components/posts/PostCard";
 import { Pagination } from "@/components/posts/Pagination";
 import { ArrowLeft, FileQuestion, Loader2 } from "lucide-react";
