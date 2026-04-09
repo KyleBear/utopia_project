@@ -25,8 +25,13 @@ export function PostForm() {
   async function handleSubmit(formData: FormData) {
     setError(null);
     startTransition(async () => {
-      const result = await createPost(formData);
-      if (result?.error) setError(result.error);
+      try {
+        const result = await createPost(formData);
+        if (result?.error) setError(result.error);
+      } catch (e) {
+        // redirect()는 NEXT_REDIRECT 에러를 throw하므로 반드시 re-throw
+        throw e;
+      }
     });
   }
 
