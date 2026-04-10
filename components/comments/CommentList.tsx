@@ -35,13 +35,48 @@ export function CommentList({ comments, currentUserId, isLoggedIn, postId }: {
   );
 }
 
+function DeleteButton({ onDelete, label }: { onDelete: () => void; label: string }) {
+  const [isPending, startTransition] = useTransition();
+  const [confirm, setConfirm] = useState(false);
+
+  if (confirm) {
+    return (
+      <span className="flex items-center gap-1">
+        <span className="text-xs text-slate-400">{label} 삭제?</span>
+        <button
+          onClick={() => startTransition(async () => { onDelete(); })}
+          disabled={isPending}
+          className="text-xs text-red-500 hover:text-red-600 font-medium px-1"
+        >
+          {isPending ? <Loader2 size={11} className="animate-spin" /> : "삭제"}
+        </button>
+        <button
+          onClick={() => setConfirm(false)}
+          className="text-xs text-slate-400 hover:text-slate-600 px-1"
+        >
+          취소
+        </button>
+      </span>
+    );
+  }
+
+  return (
+    <button
+      onClick={() => setConfirm(true)}
+      className="flex items-center gap-0.5 text-xs text-slate-300 dark:text-slate-600 hover:text-red-400 dark:hover:text-red-500 transition-colors"
+      title={`${label} 삭제`}
+    >
+      <Trash2 size={11} />
+    </button>
+  );
+}
+
 function CommentItem({ comment, currentUserId, isLoggedIn, postId }: {
   comment: Comment;
   currentUserId?: string;
   isLoggedIn: boolean;
   postId: string;
 }) {
-  const [isPending, startTransition] = useTransition();
   const [deleted, setDeleted] = useState(false);
   const [showReplyForm, setShowReplyForm] = useState(false);
 
@@ -59,7 +94,7 @@ function CommentItem({ comment, currentUserId, isLoggedIn, postId }: {
             : <UserRound size={12} className="text-slate-400" />}
         </div>
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <span className="text-xs font-medium text-slate-600 dark:text-slate-400">{author}</span>
             <span className="text-xs text-slate-400 dark:text-slate-600">{timeAgo(comment.created_at)}</span>
             <div className="ml-auto flex items-center gap-2">
@@ -72,16 +107,13 @@ function CommentItem({ comment, currentUserId, isLoggedIn, postId }: {
                 </button>
               )}
               {canDelete && (
-                <button
-                  onClick={() => startTransition(async () => {
+                <DeleteButton
+                  label="댓글"
+                  onDelete={async () => {
                     await deleteComment(comment.id, comment.post_id);
                     setDeleted(true);
-                  })}
-                  disabled={isPending}
-                  className="text-slate-300 dark:text-slate-700 hover:text-red-400 dark:hover:text-red-500 transition-colors"
-                >
-                  <Trash2 size={12} />
-                </button>
+                  }}
+                />
               )}
             </div>
           </div>
@@ -122,7 +154,6 @@ function ReplyItem({ reply, currentUserId, postId }: {
   currentUserId?: string;
   postId: string;
 }) {
-  const [isPending, startTransition] = useTransition();
   const [deleted, setDeleted] = useState(false);
 
   if (deleted) return null;
@@ -139,20 +170,19 @@ function ReplyItem({ reply, currentUserId, postId }: {
           : <UserRound size={10} className="text-slate-400" />}
       </div>
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <span className="text-xs font-medium text-slate-600 dark:text-slate-400">{author}</span>
           <span className="text-xs text-slate-400 dark:text-slate-600">{timeAgo(reply.created_at)}</span>
           {canDelete && (
-            <button
-              onClick={() => startTransition(async () => {
-                await deleteComment(reply.id, postId);
-                setDeleted(true);
-              })}
-              disabled={isPending}
-              className="ml-auto text-slate-300 dark:text-slate-700 hover:text-red-400 dark:hover:text-red-500 transition-colors"
-            >
-              <Trash2 size={11} />
-            </button>
+            <div className="ml-auto">
+              <DeleteButton
+                label="답글"
+                onDelete={async () => {
+                  await deleteComment(reply.id, postId);
+                  setDeleted(true);
+                }}
+              />
+            </div>
           )}
         </div>
         <p className="mt-0.5 text-sm text-slate-700 dark:text-slate-300 leading-relaxed">{reply.content}</p>
