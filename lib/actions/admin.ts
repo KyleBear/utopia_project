@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidateTag } from "next/cache";
+import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -46,7 +46,7 @@ export async function adminDeletePost(postId: string) {
   const admin = createAdminClient();
   const { error } = await admin.from("posts").delete().eq("id", postId);
   if (error) return { error: error.message };
-  revalidateTag("posts");
+  revalidatePath("/", "layout");
   return { success: true };
 }
 
@@ -55,6 +55,6 @@ export async function adminDeleteUser(userId: string) {
   const admin = createAdminClient();
   const { error } = await admin.auth.admin.deleteUser(userId);
   if (error) return { error: error.message };
-  revalidateTag("posts");
+  revalidatePath("/", "layout");
   return { success: true };
 }

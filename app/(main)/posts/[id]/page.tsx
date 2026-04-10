@@ -107,7 +107,7 @@ export default async function PostDetailPage({
         {post.tags?.length > 0 && (
           <div className="flex flex-wrap items-center gap-1.5">
             <Tag size={12} className="text-slate-400" />
-            {post.tags.map(tag => (
+            {post.tags.map((tag: string) => (
               <Link key={tag} href={`/?tag=${encodeURIComponent(tag)}`}
                 className="px-2 py-0.5 text-xs text-brand-600 dark:text-brand-400 bg-brand-50 dark:bg-brand-900/20 rounded-full border border-brand-100 dark:border-brand-900 hover:bg-brand-100 dark:hover:bg-brand-900/40 transition-colors">
                 #{tag}

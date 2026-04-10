@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
@@ -29,7 +29,7 @@ export async function createPost(formData: FormData) {
 
   if (error) return { error: error.message };
 
-  revalidateTag("posts");
+
   revalidatePath("/");
   redirect(`/posts/${data.id}`);
 }
@@ -58,7 +58,7 @@ export async function updatePost(postId: string, formData: FormData) {
 
   if (error) return { error: error.message };
 
-  revalidateTag("posts");
+
   revalidatePath(`/posts/${postId}`);
   revalidatePath("/");
   redirect(`/posts/${postId}`);
@@ -78,7 +78,7 @@ export async function deletePost(postId: string) {
 
   if (error) return { error: error.message };
 
-  revalidateTag("posts");
+
   revalidatePath("/");
   redirect("/");
 }

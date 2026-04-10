@@ -32,7 +32,7 @@ export const getPosts = unstable_cache(
     return { posts: data ?? [], total: count ?? 0 };
   },
   ["posts"],
-  { revalidate: 30, tags: ["posts"] }
+  { revalidate: 30 }
 );
 
 export const getPost = unstable_cache(
@@ -47,7 +47,7 @@ export const getPost = unstable_cache(
     return post;
   },
   ["post"],
-  { revalidate: 60, tags: ["posts"] }
+  { revalidate: 60 }
 );
 
 export async function getMyPosts(page = 1) {
