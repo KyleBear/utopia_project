@@ -12,7 +12,7 @@ export async function Header() {
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-[#0a0a0f]/80 backdrop-blur-md">
-      <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between gap-4">
+      <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between gap-4">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-1.5 font-bold text-lg tracking-tight">
           <Sparkles size={18} className="text-brand-500" />
