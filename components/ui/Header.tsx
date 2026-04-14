@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { logout } from "@/lib/actions/auth";
+import { getRole } from "@/lib/actions/role";
 import { ThemeToggle } from "./ThemeToggle";
+import { RoleToggle } from "./RoleToggle";
 import { PenLine, Sparkles, ScrollText, UserRound, Shield } from "lucide-react";
 
 const ADMIN_EMAIL = "juongho1024@gmail.com";
@@ -9,6 +11,7 @@ const ADMIN_EMAIL = "juongho1024@gmail.com";
 export async function Header() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
+  const role = await getRole();
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-[#0a0a0f]/80 backdrop-blur-md">
@@ -27,6 +30,9 @@ export async function Header() {
 
           {user ? (
             <>
+              {/* 역할 전환 토글 — 로그인 사용자 전체 노출 */}
+              <RoleToggle currentRole={role} />
+
               {user.email === ADMIN_EMAIL && (
                 <Link href="/admin" className="btn-ghost text-xs px-3 py-1.5 text-brand-500">
                   <Shield size={13} />
