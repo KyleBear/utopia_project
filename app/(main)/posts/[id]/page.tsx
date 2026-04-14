@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import type { Metadata } from "next";
 import { getPost } from "@/lib/data/posts";
 import { getComments } from "@/lib/actions/comments";
 import { createClient } from "@/lib/supabase/server";
@@ -13,11 +14,39 @@ import { ArrowLeft, UserRound, Lock, MessageCircle, Trash2, Pencil, Tag } from "
 
 export const revalidate = 60;
 
-export default async function PostDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+type Props = { params: Promise<{ id: string }> };
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { id } = await params;
+  const post = await getPost(id);
+  if (!post) return { title: "글을 찾을 수 없습니다 — Utopia" };
+
+  const title = `${post.title} — Utopia`;
+  const description = post.content.slice(0, 150).replace(/\n/g, " ");
+  const url = `${process.env.NEXT_PUBLIC_APP_URL}/posts/${id}`;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title: post.title,
+      description,
+      url,
+      type: "article",
+      publishedTime: post.created_at,
+      modifiedTime: post.updated_at,
+      tags: post.tags,
+    },
+    twitter: {
+      card: "summary",
+      title: post.title,
+      description,
+    },
+    alternates: { canonical: url },
+  };
+}
+
+export default async function PostDetailPage({ params }: Props) {
   const { id } = await params;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -42,101 +71,141 @@ export default async function PostDetailPage({
     userHasLiked = !!like;
   }
 
+  // JSON-LD
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "DiscussionForumPosting",
+    headline: post.title,
+    text: post.content,
+    datePublished: post.created_at,
+    dateModified: post.updated_at,
+    url: `${process.env.NEXT_PUBLIC_APP_URL}/posts/${id}`,
+    author: {
+      "@type": "Person",
+      name: post.is_anonymous ? "익명" : (post.author_nickname ?? "알 수 없음"),
+    },
+    interactionStatistic: [
+      {
+        "@type": "InteractionCounter",
+        interactionType: "https://schema.org/LikeAction",
+        userInteractionCount: post.like_count ?? 0,
+      },
+      {
+        "@type": "InteractionCounter",
+        interactionType: "https://schema.org/CommentAction",
+        userInteractionCount: comments.length,
+      },
+    ],
+    keywords: post.tags?.join(", "),
+    isPartOf: {
+      "@type": "WebSite",
+      name: "Utopia",
+      url: process.env.NEXT_PUBLIC_APP_URL,
+    },
+  };
+
   return (
-    <div className="max-w-xl mx-auto space-y-5 animate-slide-up">
-      {/* Back */}
-      <Link href="/" className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700 dark:hover:text-slate-300">
-        <ArrowLeft size={14} />
-        목록으로
-      </Link>
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
 
-      {/* Post */}
-      <article className="card p-5 space-y-4">
-        <header className="space-y-2">
-          <div className="mb-1">
-            <CategoryBadge category={post.category} />
-          </div>
-          <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100 leading-snug">
-            {post.title}
-          </h1>
-          <div className="flex items-center gap-2 text-xs text-slate-400 dark:text-slate-500">
-            <span className="flex items-center gap-1">
-              {post.is_anonymous ? (
-                <><Lock size={11} />익명</>
-              ) : (
-                <><UserRound size={11} />{post.author_nickname ?? "알 수 없음"}</>
-              )}
-            </span>
-            <span className="text-slate-300 dark:text-slate-700">·</span>
-            <span>{timeAgo(post.created_at)}</span>
+      <div className="max-w-xl mx-auto space-y-5 animate-slide-up">
+        {/* Back */}
+        <Link href="/" className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700 dark:hover:text-slate-300">
+          <ArrowLeft size={14} />
+          목록으로
+        </Link>
 
-            {isOwner && (
-              <div className="ml-auto flex items-center gap-2">
-                <Link
-                  href={`/posts/${id}/edit`}
-                  className="flex items-center gap-1 text-slate-400 hover:text-brand-500 dark:hover:text-brand-400 transition-colors"
-                >
-                  <Pencil size={12} />
-                  수정
-                </Link>
-                <form
-                  action={async () => {
-                    "use server";
-                    await deletePost(id);
-                  }}
-                >
-                  <button
-                    type="submit"
-                    className="flex items-center gap-1 text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+        {/* Post */}
+        <article className="card p-5 space-y-4">
+          <header className="space-y-2">
+            <div className="mb-1">
+              <CategoryBadge category={post.category} />
+            </div>
+            <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100 leading-snug">
+              {post.title}
+            </h1>
+            <div className="flex items-center gap-2 text-xs text-slate-400 dark:text-slate-500">
+              <span className="flex items-center gap-1">
+                {post.is_anonymous ? (
+                  <><Lock size={11} />익명</>
+                ) : (
+                  <><UserRound size={11} />{post.author_nickname ?? "알 수 없음"}</>
+                )}
+              </span>
+              <span className="text-slate-300 dark:text-slate-700">·</span>
+              <span>{timeAgo(post.created_at)}</span>
+
+              {isOwner && (
+                <div className="ml-auto flex items-center gap-2">
+                  <Link
+                    href={`/posts/${id}/edit`}
+                    className="flex items-center gap-1 text-slate-400 hover:text-brand-500 dark:hover:text-brand-400 transition-colors"
                   >
-                    <Trash2 size={12} />
-                    삭제
-                  </button>
-                </form>
-              </div>
-            )}
+                    <Pencil size={12} />
+                    수정
+                  </Link>
+                  <form
+                    action={async () => {
+                      "use server";
+                      await deletePost(id);
+                    }}
+                  >
+                    <button
+                      type="submit"
+                      className="flex items-center gap-1 text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                    >
+                      <Trash2 size={12} />
+                      삭제
+                    </button>
+                  </form>
+                </div>
+              )}
+            </div>
+          </header>
+
+          <div className="border-t border-slate-100 dark:border-slate-800 pt-4">
+            <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">
+              {post.content}
+            </p>
           </div>
-        </header>
 
-        <div className="border-t border-slate-100 dark:border-slate-800 pt-4">
-          <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">
-            {post.content}
-          </p>
-        </div>
+          {post.tags?.length > 0 && (
+            <div className="flex flex-wrap items-center gap-1.5">
+              <Tag size={12} className="text-slate-400" />
+              {post.tags.map((tag: string) => (
+                <Link key={tag} href={`/?tag=${encodeURIComponent(tag)}`}
+                  className="px-2 py-0.5 text-xs text-brand-600 dark:text-brand-400 bg-brand-50 dark:bg-brand-900/20 rounded-full border border-brand-100 dark:border-brand-900 hover:bg-brand-100 dark:hover:bg-brand-900/40 transition-colors">
+                  #{tag}
+                </Link>
+              ))}
+            </div>
+          )}
 
-        {post.tags?.length > 0 && (
-          <div className="flex flex-wrap items-center gap-1.5">
-            <Tag size={12} className="text-slate-400" />
-            {post.tags.map((tag: string) => (
-              <Link key={tag} href={`/?tag=${encodeURIComponent(tag)}`}
-                className="px-2 py-0.5 text-xs text-brand-600 dark:text-brand-400 bg-brand-50 dark:bg-brand-900/20 rounded-full border border-brand-100 dark:border-brand-900 hover:bg-brand-100 dark:hover:bg-brand-900/40 transition-colors">
-                #{tag}
-              </Link>
-            ))}
+          {/* Like */}
+          <div className="flex items-center gap-3 pt-1">
+            <LikeButton
+              postId={id}
+              initialCount={post.like_count ?? 0}
+              initialLiked={userHasLiked}
+              isLoggedIn={!!user}
+            />
+            <span className="flex items-center gap-1 text-xs text-slate-400">
+              <MessageCircle size={13} />
+              댓글 {comments.length}개
+            </span>
           </div>
-        )}
+        </article>
 
-        {/* Like */}
-        <div className="flex items-center gap-3 pt-1">
-          <LikeButton
-            postId={id}
-            initialCount={post.like_count ?? 0}
-            initialLiked={userHasLiked}
-            isLoggedIn={!!user}
-          />
-          <span className="flex items-center gap-1 text-xs text-slate-400">
-            <MessageCircle size={13} />
-            댓글 {comments.length}개
-          </span>
-        </div>
-      </article>
-
-      {/* Comments */}
-      <section className="space-y-4">
-        <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300">댓글</h2>
-        <CommentForm postId={id} isLoggedIn={!!user} />
-        <CommentList comments={comments} currentUserId={user?.id} isLoggedIn={!!user} postId={id} />
-      </section>
-    </div>
+        {/* Comments */}
+        <section className="space-y-4">
+          <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300">댓글</h2>
+          <CommentForm postId={id} isLoggedIn={!!user} />
+          <CommentList comments={comments} currentUserId={user?.id} isLoggedIn={!!user} postId={id} />
+        </section>
+      </div>
+    </>
   );
 }

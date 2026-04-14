@@ -2,10 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { DeleteAccountButton } from "@/components/auth/DeleteAccountButton";
-import { ExpertProfileForm } from "@/components/profile/ExpertProfileForm";
-import { getMyExpertProfile } from "@/lib/data/experts";
-import { generateSlugFromNickname } from "@/lib/actions/profile";
-import { ArrowLeft, UserRound, BadgeCheck, ExternalLink } from "lucide-react";
+import { ArrowLeft, UserRound } from "lucide-react";
 
 export const revalidate = 0;
 
@@ -20,11 +17,6 @@ export default async function ProfilePage() {
     .eq("id", user.id)
     .maybeSingle();
 
-  const [expertProfile, suggestedSlug] = await Promise.all([
-    getMyExpertProfile(),
-    generateSlugFromNickname(),
-  ]);
-
   return (
     <div className="max-w-xl mx-auto space-y-5 animate-slide-up">
       <Link href="/" className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700 dark:hover:text-slate-300">
@@ -32,7 +24,6 @@ export default async function ProfilePage() {
         홈으로
       </Link>
 
-      {/* 기본 정보 */}
       <div className="card p-5 space-y-4">
         <h1 className="text-lg font-bold text-slate-900 dark:text-slate-100">내 정보</h1>
 
@@ -49,31 +40,6 @@ export default async function ProfilePage() {
         </div>
       </div>
 
-      {/* 전문가 프로필 */}
-      <div className="card p-5 space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-            <BadgeCheck size={16} className="text-brand-500" />
-            전문가 프로필
-          </h2>
-          {expertProfile && (
-            <Link
-              href={`/e/${expertProfile.slug}`}
-              className="text-xs text-brand-500 hover:underline flex items-center gap-1"
-            >
-              공개 프로필 보기 <ExternalLink size={11} />
-            </Link>
-          )}
-        </div>
-
-        <p className="text-xs text-slate-500 dark:text-slate-400">
-          전문가 프로필을 등록하면 검색엔진에 노출되고, 고유 URL로 공유할 수 있습니다.
-        </p>
-
-        <ExpertProfileForm existing={expertProfile} suggestedSlug={suggestedSlug} />
-      </div>
-
-      {/* 위험 구역 */}
       <div className="card p-5 space-y-3 border-red-100 dark:border-red-900/30">
         <h2 className="text-sm font-semibold text-red-500">위험 구역</h2>
         <p className="text-xs text-slate-500 dark:text-slate-400">

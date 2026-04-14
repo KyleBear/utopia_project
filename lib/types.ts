@@ -40,17 +40,3 @@ export type Like = {
 };
 
 export type SortOption = "latest" | "popular";
-
-export type UserRole = "client" | "expert";
-
-export type ExpertProfile = {
-  id: string;
-  user_id: string;
-  slug: string;
-  bio: string | null;
-  expertise: string[];
-  is_public: boolean;
-  created_at: string;
-  updated_at: string;
-  nickname?: string | null;
-};
