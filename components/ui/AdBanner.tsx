@@ -6,7 +6,7 @@ export function AdBanner() {
       href="https://heart-link-web.vercel.app/"
       target="_blank"
       rel="noopener noreferrer"
-      className="inline-block group"
+      className="block group"
     >
       <div className="relative overflow-hidden rounded-xl border border-pink-200 dark:border-pink-900/50 bg-gradient-to-br from-pink-50 via-rose-50 to-red-50 dark:from-pink-950/40 dark:via-rose-950/30 dark:to-red-950/40 px-3 py-2.5 flex items-center gap-3 hover:shadow-md hover:shadow-pink-100 dark:hover:shadow-pink-950/30 transition-all duration-200">
 
