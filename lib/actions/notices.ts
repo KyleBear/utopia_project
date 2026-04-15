@@ -22,14 +22,48 @@ export async function getNotices() {
   return data ?? [];
 }
 
+export async function getPinnedNotice() {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("notices")
+    .select("*")
+    .eq("is_pinned", true)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  return data ?? null;
+}
+
+export async function getRecentNotices(limit = 3) {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("notices")
+    .select("*")
+    .eq("is_pinned", false)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  return data ?? [];
+}
+
+export async function getNoticeById(id: string) {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("notices")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+  return data ?? null;
+}
+
 export async function createNotice(formData: FormData) {
   await assertAdmin();
-  const title   = (formData.get("title") as string)?.trim();
-  const content = (formData.get("content") as string)?.trim();
+  const title     = (formData.get("title") as string)?.trim();
+  const content   = (formData.get("content") as string)?.trim();
+  const is_pinned = formData.get("is_pinned") === "true";
   if (!title) return { error: "제목을 입력해주세요." };
 
   const admin = createAdminClient();
-  const { error } = await admin.from("notices").insert({ title, content: content || null });
+  const { error } = await admin.from("notices").insert({ title, content: content || null, is_pinned });
   if (error) return { error: error.message };
 
   revalidatePath("/");

@@ -41,6 +41,11 @@ export function AdminNoticeForm() {
         placeholder="공지 내용 (선택)"
         className="input text-sm resize-none"
       />
+      <label className="flex items-center gap-2 cursor-pointer">
+        <input type="hidden" name="is_pinned" value="false" />
+        <input type="checkbox" name="is_pinned" value="true" className="w-4 h-4 accent-brand-500" />
+        <span className="text-xs text-slate-600 dark:text-slate-400">필독 공지로 등록</span>
+      </label>
       <button type="submit" disabled={pending} className="btn-primary text-xs px-4 py-2">
         {pending ? <Loader2 size={13} className="animate-spin" /> : <Plus size={13} />}
         공지 등록
