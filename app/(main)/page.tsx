@@ -5,6 +5,7 @@ import { SortTabs } from "@/components/posts/SortTabs";
 import { CategoryTabs } from "@/components/posts/CategoryTabs";
 import { SearchBar } from "@/components/posts/SearchBar";
 import { NoticesSidebar } from "@/components/notices/NoticesSidebar";
+import { AdBanner } from "@/components/ui/AdBanner";
 import { PenLine, Loader2, X } from "lucide-react";
 import type { SortOption } from "@/lib/types";
 
@@ -90,6 +91,11 @@ export default async function HomePage({
             tag={currentTag}
           />
         </Suspense>
+
+        {/* 모바일 광고 배너 — lg 미만에서만 노출 */}
+        <div className="block lg:hidden">
+          <AdBanner />
+        </div>
       </div>
 
       {/* 사이드바 */}
