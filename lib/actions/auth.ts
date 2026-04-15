@@ -27,6 +27,11 @@ export async function signup(formData: FormData) {
     return { error: "닉네임은 2~20자 사이로 입력해주세요." };
   }
 
+  const domain = email.split("@")[1]?.toLowerCase();
+  if (domain !== "gmail.com" && domain !== "naver.com") {
+    return { error: "Gmail 또는 네이버 이메일만 가입할 수 있습니다." };
+  }
+
   // 닉네임 중복 체크
   const { data: existingNickname } = await supabase
     .from("user_profiles")

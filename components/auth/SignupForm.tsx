@@ -21,6 +21,11 @@ export function SignupForm() {
     if (password.length < 8)  { setError("비밀번호는 8자 이상이어야 합니다."); return; }
 
     const email = formData.get("email") as string;
+    const domain = email.split("@")[1]?.toLowerCase();
+    if (domain !== "gmail.com" && domain !== "naver.com") {
+      setError("Gmail 또는 네이버 이메일만 가입할 수 있습니다.");
+      return;
+    }
     startTransition(async () => {
       const result = await signup(formData);
       if (result?.error) setError(result.error);
@@ -61,7 +66,7 @@ export function SignupForm() {
       <div className="space-y-1.5">
         <label className="text-sm font-medium text-slate-700 dark:text-slate-300">이메일</label>
         <input name="email" type="email" required autoComplete="email"
-          placeholder="you@example.com" className="input" />
+          placeholder="@gmail.com 또는 @naver.com" className="input" />
       </div>
 
       <div className="space-y-1.5">
