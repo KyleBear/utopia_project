@@ -1,6 +1,7 @@
 import { getNotices } from "@/lib/actions/notices";
 import { Bell, Megaphone } from "lucide-react";
 import { timeAgo } from "@/lib/utils";
+import { AdBanner } from "@/components/ui/AdBanner";
 
 export async function NoticesSidebar() {
   const notices = await getNotices();
@@ -39,6 +40,8 @@ export async function NoticesSidebar() {
           </ul>
         )}
       </div>
+      {/* 광고 배너 */}
+      <AdBanner />
     </aside>
   );
 }
