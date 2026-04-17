@@ -26,18 +26,27 @@ export function ExpertBanner() {
       </div>
 
       {/* 텍스트 */}
-      <div className="flex-1 min-w-0">
+      <div className="group/text flex-1 min-w-0 relative">
         <p className="text-xs font-bold text-violet-700 dark:text-violet-300 leading-tight">
           익명 전문가가 함께해요
         </p>
         <p className="text-[10px] text-indigo-400 dark:text-indigo-500 truncate">
           심리상담사 · 정신건강전문가 활동 중
         </p>
+
+        {/* 호버 툴팁 */}
+        <div className="pointer-events-none absolute bottom-full left-0 mb-2 hidden group-hover/text:block z-50">
+          <div className="rounded-lg bg-slate-800 dark:bg-slate-700 text-white text-[10px] leading-relaxed px-2.5 py-2 shadow-lg w-52">
+            유토피아는 심리상담사·정신건강전문가·임상심리사 등이 익명으로 활동하며 진심 어린 답변을 드리는 무료 익명 상담 커뮤니티예요.
+          </div>
+          {/* 말풍선 꼬리 */}
+          <div className="ml-3 w-2 h-2 bg-slate-800 dark:bg-slate-700 rotate-45 -mt-1" />
+        </div>
       </div>
 
       {/* 뱃지 */}
       <div className="shrink-0 px-2.5 py-1 rounded-lg bg-gradient-to-r from-violet-500 to-indigo-500 text-white text-[10px] font-semibold">
-        무료 익명 💜
+        무료 익명 상담
       </div>
     </div>
   );
