@@ -6,6 +6,7 @@ import { CategoryTabs } from "@/components/posts/CategoryTabs";
 import { SearchBar } from "@/components/posts/SearchBar";
 import { NoticesSidebar } from "@/components/notices/NoticesSidebar";
 import { AdBanner } from "@/components/ui/AdBanner";
+import { ExpertBanner } from "@/components/ui/ExpertBanner";
 import { PenLine, Loader2, X } from "lucide-react";
 import type { SortOption } from "@/lib/types";
 
@@ -92,8 +93,9 @@ export default async function HomePage({
           />
         </Suspense>
 
-        {/* 모바일 광고 배너 — lg 미만에서만 노출 */}
-        <div className="block lg:hidden">
+        {/* 모바일 전문가 배너 + 광고 배너 — lg 미만에서만 노출 */}
+        <div className="block lg:hidden space-y-3">
+          <ExpertBanner />
           <AdBanner />
         </div>
       </div>

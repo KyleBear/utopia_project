@@ -1,5 +1,6 @@
 import { getPinnedNotice, getRecentNotices } from "@/lib/actions/notices";
 import { AdBanner } from "@/components/ui/AdBanner";
+import { ExpertBanner } from "@/components/ui/ExpertBanner";
 import { NoticeAccordion } from "./NoticeAccordion";
 
 export async function NoticesSidebar() {
@@ -13,6 +14,9 @@ export async function NoticesSidebar() {
       <div className="card overflow-hidden">
         <NoticeAccordion pinned={pinned} recent={recent} />
       </div>
+
+      {/* 전문가 신뢰 배너 */}
+      <ExpertBanner />
 
       {/* 광고 배너 */}
       <AdBanner />
